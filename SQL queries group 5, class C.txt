@@ -1,0 +1,194 @@
+SQL queries for creating the database - group 5 - Database Management
+Carl Humbs 500927977
+Dide Uzun 500923796
+Bart Remmers 500777595
+Pip Velthuijs 500831930
+
+Master Digital Driven Business
+Mr. Pinosio & Mr. Situmeang
+September 21, 2023
+
+
+-- Creating the sales table
+CREATE TABLE IF NOT EXISTS public."Sales"
+(
+    "MovieName" character varying(500) COLLATE pg_catalog."default",
+    "MovieID" integer NOT NULL,
+    "GenreName" character varying(500) COLLATE pg_catalog."default",
+    worldwide_box_office bigint,
+    production_budget bigint,
+    CONSTRAINT "Sales_pkey" PRIMARY KEY ("MovieID")
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public."Sales"
+    OWNER to postgres;
+
+-- creating the expert review table
+CREATE TABLE IF NOT EXISTS public."ExpertReview"
+(
+    "ExpertRewID" integer NOT NULL,
+    "MovieID" integer,
+    "WC" integer,
+    idvscore numeric(6,2),
+    "Analytic" numeric(6,2),
+    "Clout" numeric(6,2),
+    affect numeric(6,2),
+    posemo numeric(6,2),
+    negemo numeric(6,2),
+    CONSTRAINT "ExpertReview_pkey" PRIMARY KEY ("ExpertRewID")
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public."ExpertReview"
+    OWNER to postgres;
+	
+-- creating the metaclean table
+CREATE TABLE IF NOT EXISTS public."MetaClean"
+(
+    genre character varying COLLATE pg_catalog."default",
+    rating character varying(500) COLLATE pg_catalog."default",
+    "MovieID" integer,
+    "DummieID" integer NOT NULL,
+    CONSTRAINT "MetaClean_pkey" PRIMARY KEY ("DummieID")
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public."MetaClean"
+    OWNER to postgres;
+	
+-- creating the user review table
+CREATE TABLE IF NOT EXISTS public."UserReview"
+(
+    "UserRewID" integer,
+    "MovieID" integer,
+    "WC" integer,
+    "thumbsTot" numeric(6,2),
+    "Clout" numeric(6,2),
+    affect numeric(6,2),
+    posemo numeric(6,2),
+    negemo numeric(6,2)
+	CONSTRAINT "UserReview_pkey" PRIMARY KEY ("UserRewID")
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public."UserReview"
+    OWNER to postgres;
+	
+-- creating the genre table
+
+CREATE TABLE IF NOT EXISTS public."Genre"
+(
+    "GenreID" integer,
+    "Genre" character varying(500) COLLATE pg_catalog."default"
+	CONSTRAINT "Genre_pkey" PRIMARY KEY ("GenreID")
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public."Genre"
+    OWNER to postgres;
+	
+-- creating has_genre table
+
+CREATE TABLE IF NOT EXISTS public.has_genre
+(
+    "MovieID" integer,
+    "GenreID" integer
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.has_genre
+    OWNER to postgres;
+
+-- Queries per hypothesis
+
+-- Hypothesis 1 - queries of Bart Remmers
+SELECT AVG(s.worldwide_box_office) AS average_worldwide_box_office, mc.rating
+FROM public."Sales" s
+LEFT JOIN public."MetaClean" mc
+ON s."MovieID" = mc."MovieID"
+WHERE mc."MovieID" IS NOT NULL
+GROUP BY mc.rating;
+
+-- Hypothesis 2 - queries of Dide Uzun
+SELECT t."MovieID",
+  ROUND(MAX(t."worldwide_box_office"), 2) AS max_sales,
+  ROUND(AVG(t."WC"), 2) AS avg_wordcount, 
+  ROUND(AVG(t."idvscore"), 2) AS avg_idvscore, 
+  ROUND(AVG(t."Analytic"), 2) AS avg_analitic, 
+  ROUND(AVG(t."Clout"), 2) AS avg_clout,
+  ROUND(AVG(t."affect"), 2) AS avg_affect,
+  ROUND(AVG(t."posemo"), 2) AS avg_posemo,
+  ROUND(AVG(t."negemo"), 2) AS avg_negemo
+FROM ( 
+  SELECT er."ExpertRewID", er."MovieID", er."idvscore", er."WC", er."Analytic", er."Clout", er."affect", er."posemo", er."negemo", s."worldwide_box_office"
+  FROM public."ExpertReview" er 
+  LEFT JOIN public."Sales" s
+  ON er."MovieID" = s."MovieID"
+  WHERE s."worldwide_box_office" IS NOT NULL
+) t
+GROUP BY t."MovieID"
+ORDER BY t."MovieID";
+
+
+SELECT t."MovieID",
+  ROUND(MAX(t."worldwide_box_office"), 2) AS max_sales,
+  ROUND(AVG(t."WC"), 2) AS avg_wordcount, 
+  ROUND(AVG(t."idvscore"), 2) AS avg_idvscore, 
+  ROUND(AVG(t."Analytic"), 2) AS avg_analitic, 
+  ROUND(AVG(t."Clout"), 2) AS avg_clout,
+  ROUND(AVG(t."affect"), 2) AS avg_affect,
+  ROUND(AVG(t."posemo"), 2) AS avg_posemo,
+  ROUND(AVG(t."negemo"), 2) AS avg_negemo
+FROM ( 
+	SELECT er."ExpertRewID", er."MovieID", er."idvscore", er."WC", er."Analytic", er."Clout", er."affect", er."posemo", er."negemo", s."worldwide_box_office"
+FROM public."ExpertReview" er 
+LEFT JOIN public."Sales" s
+ON er."MovieID" = s."MovieID"
+WHERE s."worldwide_box_office" IS NOT NULL
+) t
+GROUP BY t."MovieID"
+ORDER BY t."MovieID";
+
+-- Hypothesis 3 - queries of Pip Velthuijs
+SELECT s.worldwide_box_office, hg."GenreID", g."Genre"
+FROM public."Sales" s
+JOIN public.has_genre hg 
+ON s."MovieID" = hg."MovieID"
+JOIN public."Genre" g ON hg."GenreID" = g."GenreID"
+
+SELECT AVG(worldwide_box_office::numeric) AS overall_mean
+FROM public."Sales";
+
+
+SELECT AVG(worldwide_box_office::numeric) AS adventure_genre_mean
+FROM (public."Sales" s
+JOIN public.has_genre hg 
+ON s."MovieID" = hg."MovieID"
+JOIN public."Genre" g ON hg."GenreID" = g."GenreID")
+WHERE g."Genre" = 'adventure';
+
+SELECT g."Genre", AVG(s.worldwide_box_office) AS avg_box_office
+FROM public."Sales" s
+JOIN public.has_genre hg ON s."MovieID" = hg."MovieID"
+JOIN public."Genre" g ON hg."GenreID" = g."GenreID"
+GROUP BY g."Genre"
+ORDER BY avg_box_office DESC;
+
+SELECT AVG(worldwide_box_office::numeric) AS adult_genre_mean
+    FROM (public."Sales" s
+    JOIN public.has_genre hg 
+    ON s."MovieID" = hg."MovieID"
+    JOIN public."Genre" g ON hg."GenreID" = g."GenreID")
+    WHERE g."Genre" = 'adult';
+
+
+-- Hypothesis 4 - queries of Carl Humbs
+SELECT s."MovieID", s."worldwide_box_office", s."production_budget" 
+FROM public."Sales" s
