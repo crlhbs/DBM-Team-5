@@ -8,7 +8,7 @@ Dide Uzun 		500923796,
 Pip Velthuijs 		500831930
 
 
-This repository includes:
+The repository includes:
 •	The Python code that has been used to clean the original data, in order to use it in the database.
 •	The Python Encapsulation, used to access the created database, as well as all the code used to analyze the data, and also the results of these analyses and hypothesis testing.
 •	This introduction document
