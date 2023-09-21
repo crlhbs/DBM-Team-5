@@ -13,4 +13,4 @@ This repository includes:
 •	The Python Encapsulation, used to access the created database, as well as all the code used to analyze the data, and also the results of these analyses and hypothesis testing.
 •	This introduction document
 •	ERD diagram
-•	QL queries used to create the database
+•	SQL queries used to create the database
