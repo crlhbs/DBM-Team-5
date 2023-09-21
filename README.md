@@ -11,6 +11,6 @@ Pip Velthuijs 		500831930
 The repository includes:
 •	The Python code that has been used to clean the original data, in order to use it in the database.
 •	The Python Encapsulation, used to access the created database, as well as all the code used to analyze the data, and also the results of these analyses and hypothesis testing.
-•	This introduction document
+•	The introduction document
 •	ERD diagram
 •	SQL queries used to create the database
